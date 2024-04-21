@@ -1,0 +1,44 @@
+version: '3.6'
+services:
+  core-functions:
+    build:
+      context: core-functions
+      dockerfile: Dockerfile-prod
+    restart: always
+    # ports:
+    # - "8080:3000"
+    env_file:
+    - ./core-functions/.env
+    volumes:
+    - ./core-functions/.env:/app/.env
+    networks:
+      - system
+  db:
+    image: postgres:12
+    restart: always
+    # volumes:
+    # - db_data:/var/lib/postgresql/data
+    ports:
+      - 5555:5432
+    networks:
+      - system
+    environment:
+      POSTGRES_PASSWORD: postgrespassword
+      TZ: 'GMT+7'
+  graphql:
+    build:
+      context: hasura
+      dockerfile: Dockerfile
+    volumes:
+    - ./hasura/migrations:/hasura-migrations
+    - ./hasura/metadata:/hasura-metadata
+    ports:
+    - "8888:8080"
+    restart: always
+    env_file:
+    - ./hasura/.env
+    networks:
+      - system
+networks:
+  system:
+    driver: bridge
